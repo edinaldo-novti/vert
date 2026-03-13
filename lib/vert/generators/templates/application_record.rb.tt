@@ -1,0 +1,8 @@
+# frozen_string_literal: true
+
+class ApplicationRecord < ActiveRecord::Base
+  primary_abstract_class
+
+  # Optional: include Vert::Concerns::UuidPrimaryKey for UUID v7 primary keys
+  # include Vert::Concerns::UuidPrimaryKey
+end

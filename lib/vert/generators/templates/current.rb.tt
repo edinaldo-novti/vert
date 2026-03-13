@@ -1,0 +1,10 @@
+# frozen_string_literal: true
+
+# Current - Thread-safe request context
+#
+# Provides access to current tenant, user, and company context.
+#
+class Current < Vert::Current
+  # Add any application-specific attributes here
+  # attribute :custom_attribute
+end

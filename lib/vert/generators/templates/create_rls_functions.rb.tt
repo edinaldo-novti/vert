@@ -1,0 +1,27 @@
+# frozen_string_literal: true
+
+class CreateRlsFunctions < ActiveRecord::Migration[7.1]
+  def up
+    execute <<~SQL
+      CREATE OR REPLACE FUNCTION current_tenant_id() RETURNS uuid AS $$
+        SELECT NULLIF(current_setting('app.current_tenant_id', true), '')::uuid;
+      $$ LANGUAGE SQL STABLE;
+
+      CREATE OR REPLACE FUNCTION current_company_id() RETURNS uuid AS $$
+        SELECT NULLIF(current_setting('app.current_company_id', true), '')::uuid;
+      $$ LANGUAGE SQL STABLE;
+
+      CREATE OR REPLACE FUNCTION current_user_id() RETURNS uuid AS $$
+        SELECT NULLIF(current_setting('app.current_user_id', true), '')::uuid;
+      $$ LANGUAGE SQL STABLE;
+    SQL
+  end
+
+  def down
+    execute <<~SQL
+      DROP FUNCTION IF EXISTS current_tenant_id();
+      DROP FUNCTION IF EXISTS current_company_id();
+      DROP FUNCTION IF EXISTS current_user_id();
+    SQL
+  end
+end

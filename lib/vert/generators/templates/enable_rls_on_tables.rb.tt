@@ -1,0 +1,39 @@
+# frozen_string_literal: true
+
+class EnableRlsOnTables < ActiveRecord::Migration[7.1]
+  TABLES = <%= tables_list.inspect %>.freeze
+
+  def up
+    TABLES.each do |table_name|
+      enable_rls_on_table(table_name)
+    end
+  end
+
+  def down
+    TABLES.each do |table_name|
+      disable_rls_on_table(table_name)
+    end
+  end
+
+  private
+
+  def enable_rls_on_table(table_name)
+    execute <<~SQL
+      ALTER TABLE #{table_name} ENABLE ROW LEVEL SECURITY;
+      ALTER TABLE #{table_name} FORCE ROW LEVEL SECURITY;
+
+      DROP POLICY IF EXISTS tenant_isolation_#{table_name} ON #{table_name};
+      CREATE POLICY tenant_isolation_#{table_name} ON #{table_name}
+        FOR ALL
+        USING (tenant_id = current_tenant_id())
+        WITH CHECK (tenant_id = current_tenant_id());
+    SQL
+  end
+
+  def disable_rls_on_table(table_name)
+    execute <<~SQL
+      DROP POLICY IF EXISTS tenant_isolation_#{table_name} ON #{table_name};
+      ALTER TABLE #{table_name} DISABLE ROW LEVEL SECURITY;
+    SQL
+  end
+end

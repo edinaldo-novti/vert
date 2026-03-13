@@ -1,0 +1,39 @@
+# frozen_string_literal: true
+
+# Vert - Configuration
+#
+# Enable only the features you need. All flags default to false except enable_health.
+#
+Vert.configure do |config|
+  # --- Row Level Security (PostgreSQL) ---
+  # config.enable_rls = ENV.fetch("ENABLE_RLS", "false") == "true"
+  # config.rls_user = ENV.fetch("RLS_USER", "app_user")
+
+  # --- Outbox (reliable event publishing to RabbitMQ) ---
+  # config.enable_outbox = true
+  # config.rabbitmq_url = ENV.fetch("RABBITMQ_URL", "amqp://guest:guest@localhost:5672/")
+  # config.exchange_name = ENV.fetch("RABBITMQ_EXCHANGE", "vert.events")
+
+  # --- Health checks ---
+  # config.enable_health = true
+  # config.health_check_path = "/health"
+  # config.auto_mount_health_routes = false
+  # config.health_check_database = true
+  # config.health_check_redis = false
+  # config.health_check_rabbitmq = false
+  # config.health_check_sidekiq = false
+
+  # --- Authorization (RBAC/ABAC with Pundit) ---
+  # config.enable_authorization = false
+
+  # --- Model concerns (enable if your app uses these patterns) ---
+  # config.enable_multi_tenant = false
+  # config.enable_auditable = false
+  # config.enable_soft_deletable = false
+  # config.enable_uuid_primary_key = false
+  # config.enable_company_scoped = false
+  # config.enable_document_storeable = false
+
+  # --- Document service (for has_document) ---
+  # config.document_service_url = ENV.fetch("DOCUMENT_SERVICE_URL", "http://localhost:3020")
+end

@@ -1,0 +1,5 @@
+# frozen_string_literal: true
+
+class HealthController < ActionController::API
+  include Vert::Health::ControllerMixin
+end

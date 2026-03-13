@@ -1,0 +1,11 @@
+# frozen_string_literal: true
+
+# OutboxEvent - Transactional outbox for reliable event publishing
+#
+# Events are stored in the database and published asynchronously
+# to RabbitMQ. Enable enable_outbox in config/initializers/vert.rb
+# and run the OutboxPublisherJob (e.g. via Sidekiq-Cron) to publish.
+#
+class OutboxEvent < ApplicationRecord
+  include Vert::Outbox::Event
+end
