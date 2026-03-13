@@ -3,14 +3,14 @@
 require_relative "lib/vert/version"
 
 Gem::Specification.new do |spec|
-  spec.name = "vert"
+  spec.name = "vert-core"
   spec.version = Vert::VERSION
   spec.authors = ["Vert Team"]
   spec.email = ["dev@vert.dev"]
 
   spec.summary = "Generic core library for Rails microservices"
   spec.description = "Optional patterns for Rails apps: multi-tenancy, RLS, outbox, health checks, auditing, soft delete, UUID primary keys, and document storage client. All features are configurable via initializer."
-  spec.homepage = "https://github.com/vert-rb/vert"
+  spec.homepage = "https://github.com/edinaldo-novti/vert"
   spec.license = "MIT"
   spec.required_ruby_version = ">= 3.2.0"
 

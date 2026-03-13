@@ -4,10 +4,10 @@ Gem genérica de padrões para aplicações Rails: contexto de request, RLS, Out
 
 ## Instalação
 
-Adicione ao `Gemfile`:
+Adicione ao `Gemfile` (nome da gem no RubyGems é `vert-core`; o módulo continua `Vert`):
 
 ```ruby
-gem "vert"
+gem "vert-core"
 ```
 
 Execute:
