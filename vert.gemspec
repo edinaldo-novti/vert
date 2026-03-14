@@ -15,13 +15,14 @@ Gem::Specification.new do |spec|
   spec.required_ruby_version = ">= 3.2.0"
 
   spec.metadata["homepage_uri"] = spec.homepage
-  spec.metadata["source_code_uri"] = spec.homepage
+  spec.metadata["source_code_uri"] = "#{spec.homepage}/tree/main"
   spec.metadata["changelog_uri"] = "#{spec.homepage}/blob/main/CHANGELOG.md"
 
   spec.files = Dir.chdir(__dir__) do
     Dir.glob("**/*").reject do |f|
       File.directory?(f) ||
         (File.expand_path(f) == __FILE__) ||
+        f.end_with?(".gem") ||
         f.start_with?(*%w[bin/ test/ spec/ features/ .git .circleci appveyor Gemfile])
     end
   end
@@ -29,11 +30,11 @@ Gem::Specification.new do |spec|
   spec.executables = spec.files.grep(%r{\Aexe/}) { |f| File.basename(f) }
   spec.require_paths = ["lib"]
 
-  spec.add_dependency "activesupport", ">= 7.0"
-  spec.add_dependency "activerecord", ">= 7.0"
-  spec.add_dependency "discard", "~> 1.3"
-  spec.add_dependency "bunny", "~> 2.22"
-  spec.add_dependency "sidekiq", ">= 7.0"
+  spec.add_runtime_dependency "activesupport", ">= 7.0", "< 9.0"
+  spec.add_runtime_dependency "activerecord", ">= 7.0", "< 9.0"
+  spec.add_runtime_dependency "bunny", "~> 2.22"
+  spec.add_runtime_dependency "discard", "~> 1.3"
+  spec.add_runtime_dependency "sidekiq", ">= 7.0", "< 9.0"
 
   spec.add_development_dependency "rake", "~> 13.0"
   spec.add_development_dependency "rspec", "~> 3.0"
