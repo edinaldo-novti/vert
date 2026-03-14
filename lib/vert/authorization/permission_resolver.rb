@@ -51,7 +51,10 @@ module Vert
         end
 
         def invalidate_user_cache(user_id)
-          pattern = "#{CACHE_PREFIX}:#{user_id}:*"
+          return if user_id.blank?
+          # Sanitize to avoid Redis KEYS pattern injection (e.g. * or ? in user_id)
+          safe_id = user_id.to_s.gsub(%r{[*?\[\]\{\}\\]}, "")
+          pattern = "#{CACHE_PREFIX}:#{safe_id}:*"
           redis_delete_pattern(pattern)
         end
 

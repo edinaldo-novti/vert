@@ -50,6 +50,7 @@ module Vert
       @enable_company_scoped = false
       @enable_document_storeable = false
 
+      # Production: set RABBITMQ_URL, DOCUMENT_SERVICE_URL, REDIS_URL via ENV; do not rely on defaults.
       @rls_user = ENV.fetch("RLS_USER", "app_user")
       @rabbitmq_url = ENV.fetch("RABBITMQ_URL", "amqp://guest:guest@localhost:5672/")
       @exchange_name = ENV.fetch("RABBITMQ_EXCHANGE", "vert.events")

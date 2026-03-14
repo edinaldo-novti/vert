@@ -121,6 +121,12 @@ class MyJob < ApplicationJob
 end
 ```
 
+## Produção e segurança
+
+- Defina sempre via **variáveis de ambiente** em produção: `RABBITMQ_URL`, `DOCUMENT_SERVICE_URL`, `REDIS_URL`. Os valores padrão (guest/localhost) são apenas para desenvolvimento.
+- Serviços que publicam mensagens nas filas consumidas com `Vert::Rls::ConsumerContext` podem definir o contexto (tenant_id, user_id) via headers; garanta que apenas serviços confiáveis publiquem nessas filas.
+- Para mais detalhes, veja `SECURITY_AND_QUALITY_AUDIT.md` no repositório.
+
 ## Licença
 
 MIT.
