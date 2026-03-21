@@ -28,6 +28,10 @@ module Vert
         require "sneakers"
         include Sneakers::Worker
         include ConsumerContext
+
+        # Remove BaseConsumer from Sneakers' worker registry — only concrete
+        # subclasses (which call from_queue) should be registered.
+        Sneakers::Worker::Classes.delete(self) if defined?(Sneakers::Worker::Classes)
       rescue LoadError
         # sneakers gem not available in this service — consumers will not be registered
       end

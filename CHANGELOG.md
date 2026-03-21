@@ -1,5 +1,11 @@
 # Changelog
 
+## [1.0.5] - 2026-03-21
+
+### Fixed
+
+- `BaseConsumer`: remove a própria classe do registro `Sneakers::Worker::Classes` para evitar que o Sneakers tente iniciar um worker com `queue_name = nil` (apenas subclasses concretas com `from_queue` devem ser registradas).
+
 ## [1.0.4] - 2026-03-21
 
 ### Fixed
