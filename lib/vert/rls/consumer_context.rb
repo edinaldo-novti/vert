@@ -31,7 +31,14 @@ module Vert
 
         # Remove BaseConsumer from Sneakers' worker registry — only concrete
         # subclasses (which call from_queue) should be registered.
-        Sneakers::Worker::Classes.delete(self) if defined?(Sneakers::Worker::Classes)
+        Sneakers::Worker::Classes.delete(self)
+
+        # Register concrete subclasses in the Sneakers worker registry
+        # so that `rake sneakers:run` discovers them automatically.
+        def self.inherited(subclass)
+          super
+          Sneakers::Worker::Classes << subclass
+        end
       rescue LoadError
         # sneakers gem not available in this service — consumers will not be registered
       end

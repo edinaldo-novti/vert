@@ -1,5 +1,11 @@
 # Changelog
 
+## [1.0.6] - 2026-03-21
+
+### Fixed
+
+- `BaseConsumer`: adiciona hook `inherited` para registrar subclasses concretas no `Sneakers::Worker::Classes`. O `include Sneakers::Worker` na classe base não propaga o registro via herança (é ativado apenas via `included` hook de módulo). Sem isso, `rake sneakers:run` não encontra workers.
+
 ## [1.0.5] - 2026-03-21
 
 ### Fixed
