@@ -24,8 +24,13 @@ module Vert
     end
 
     class BaseConsumer
-      include Sneakers::Worker if defined?(Sneakers::Worker)
-      include ConsumerContext if defined?(Sneakers::Worker)
+      begin
+        require "sneakers"
+        include Sneakers::Worker
+        include ConsumerContext
+      rescue LoadError
+        # sneakers gem not available in this service — consumers will not be registered
+      end
     end
   end
 end

@@ -1,5 +1,11 @@
 # Changelog
 
+## [1.0.4] - 2026-03-21
+
+### Fixed
+
+- `BaseConsumer`: corrigido bug de ordem de carregamento em que `if defined?(Sneakers::Worker)` era avaliado antes do Sneakers ser carregado no contexto Rake (`sneakers:run`), resultando em `NoMethodError: undefined method 'from_queue'`. Alterado para `require "sneakers"` com `rescue LoadError` para garantir o include correto independente da ordem de boot.
+
 ## [1.0.3] - 2026-03-21
 
 ### Fixed
