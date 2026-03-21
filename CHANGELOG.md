@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.0.3] - 2026-03-21
+
+### Fixed
+
+- `Configuration`: default `rabbitmq_url` corrigido de `amqp://guest:guest@localhost` para `amqp://vfarma:vfarma123@localhost:5672/`.
+- `Configuration`: default `exchange_name` corrigido de `"vert.events"` para `"verticalerp.events"` (alinhado ao exchange canônico do projeto).
+
 ## [1.0.0] - 2025-03-14
 
 ### Added

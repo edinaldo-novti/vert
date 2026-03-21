@@ -52,8 +52,8 @@ module Vert
 
       # Production: set RABBITMQ_URL, DOCUMENT_SERVICE_URL, REDIS_URL via ENV; do not rely on defaults.
       @rls_user = ENV.fetch("RLS_USER", "app_user")
-      @rabbitmq_url = ENV.fetch("RABBITMQ_URL", "amqp://guest:guest@localhost:5672/")
-      @exchange_name = ENV.fetch("RABBITMQ_EXCHANGE", "vert.events")
+      @rabbitmq_url = ENV.fetch("RABBITMQ_URL", "amqp://vfarma:vfarma123@localhost:5672/")
+      @exchange_name = ENV.fetch("RABBITMQ_EXCHANGE", "verticalerp.events")
       @document_service_url = ENV.fetch("DOCUMENT_SERVICE_URL", "http://localhost:3020")
       @health_check_path = "/health"
       @auto_mount_health_routes = false
