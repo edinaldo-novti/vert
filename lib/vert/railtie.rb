@@ -4,6 +4,14 @@ module Vert
   class Railtie < Rails::Railtie
     config.vert = ActiveSupport::OrderedOptions.new
 
+    initializer "vert.consumer_paths", before: :set_autoload_paths do |app|
+      consumers_path = app.root.join("app", "consumers")
+      if consumers_path.directory?
+        app.config.autoload_paths << consumers_path
+        app.config.eager_load_paths << consumers_path
+      end
+    end
+
     initializer "vert.middleware" do |app|
       if Vert.config.enable_rls
         app.middleware.use Vert::Rls::ContextMiddleware

@@ -1,5 +1,11 @@
 # Changelog
 
+## [1.0.7] - 2026-03-21
+
+### Added
+
+- `Railtie`: initializer `vert.consumer_paths` que adiciona automaticamente `app/consumers` ao `autoload_paths` e `eager_load_paths` quando o diretório existe. Elimina a necessidade de configuração manual em cada serviço e garante que `rake sneakers:run` descubra todos os workers via `Rails.application.eager_load!`.
+
 ## [1.0.6] - 2026-03-21
 
 ### Fixed
