@@ -11,7 +11,7 @@ module Vert
         validates :aggregate_id, presence: true
         validates :payload, presence: true
         validates :status, presence: true
-        enum :status, { pending: 0, published: 1, failed: 2 }, prefix: true
+        enum :status, { pending: "pending", published: "published", failed: "failed" }, prefix: true
         scope :pending_events, -> { status_pending.order(:created_at) }
         scope :failed_events, -> { status_failed.where("retry_count < ?", max_retry_count).order(:created_at) }
         scope :by_aggregate, ->(type, id) { where(aggregate_type: type, aggregate_id: id) }
