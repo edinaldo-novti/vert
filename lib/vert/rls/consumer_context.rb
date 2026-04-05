@@ -16,10 +16,17 @@ module Vert
         if Vert.config.enable_rls && Vert::Current.tenant_id.present?
           ConnectionHandler.set_context(tenant_id: Vert::Current.tenant_id, company_id: Vert::Current.company_id, user_id: Vert::Current.user_id)
         end
-        super
+        work(message)
       ensure
         Vert::Current.reset_all
         ConnectionHandler.reset_context if Vert.config.enable_rls
+      end
+
+      # Convenience wrapper for consumers that want to explicitly mark
+      # the RLS-protected block. Context is already set by work_with_params,
+      # so this simply yields the block.
+      def with_rls_context
+        yield
       end
     end
 

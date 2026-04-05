@@ -7,9 +7,9 @@ module Vert
         def set_context(tenant_id:, company_id: nil, user_id: nil)
           return unless tenant_id.present?
           connection = ActiveRecord::Base.connection
-          connection.execute(ActiveRecord::Base.sanitize_sql(["SET LOCAL app.current_tenant_id = %s", tenant_id]))
-          connection.execute(ActiveRecord::Base.sanitize_sql(["SET LOCAL app.current_company_id = %s", company_id])) if company_id.present?
-          connection.execute(ActiveRecord::Base.sanitize_sql(["SET LOCAL app.current_user_id = %s", user_id])) if user_id.present?
+          connection.execute("SET app.current_tenant_id = #{connection.quote(tenant_id.to_s)}")
+          connection.execute("SET app.current_company_id = #{connection.quote(company_id.to_s)}") if company_id.present?
+          connection.execute("SET app.current_user_id = #{connection.quote(user_id.to_s)}") if user_id.present?
           Vert::Current.rls_configured = true
         rescue StandardError => e
           Rails.logger.error("[Vert::RLS] #{e.message}") if defined?(Rails)
