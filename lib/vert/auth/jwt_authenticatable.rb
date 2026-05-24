@@ -170,6 +170,13 @@ module Vert
         @jwt_payload
       end
 
+      # True após `authenticate_jwt!` ter populado o payload com sucesso.
+      # Útil para `before_action :foo, if: :jwt_authenticated?` em callbacks
+      # que dependem de Vert::Current já populado.
+      def jwt_authenticated?
+        @jwt_payload.present?
+      end
+
       # Override no serviço para retornar o registro User correspondente
       # ao `sub` do JWT.
       def current_jwt_user

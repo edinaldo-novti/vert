@@ -1,5 +1,11 @@
 # Changelog
 
+## [1.0.14] - 2026-05-24
+
+### Added
+
+- `Vert::Auth::JwtAuthenticatable#jwt_authenticated?` — helper que retorna `true` após `authenticate_jwt!` ter populado o payload com sucesso. Necessário durante o rollout para usar em `before_action :foo, if: :jwt_authenticated?` (callbacks que dependem de `Vert::Current` já populado).
+
 ## [1.0.13] - 2026-05-24
 
 ### Added
