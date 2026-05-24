@@ -36,6 +36,9 @@ require_relative "vert/authorization/dynamic_policy"
 require_relative "vert/authorization/policy_finder"
 require_relative "vert/authorization/controller_methods"
 
+# Auth
+require_relative "vert/auth/jwt_authenticatable"
+
 # Railtie
 require_relative "vert/railtie" if defined?(Rails::Railtie)
 

@@ -1,5 +1,42 @@
 # Changelog
 
+## [1.0.13] - 2026-05-24
+
+### Added
+
+- `Vert::Auth::JwtAuthenticatable`: nova concern de autenticação JWT Bearer que estabelece o contexto multi-tenant via `Vert::Current` lendo **exclusivamente** os claims do JWT (regra inviolável 2 do projeto — nunca confiar em parâmetros do cliente).
+  - Valida o header `X-Tenant-ID` (defesa em profundidade): se presente, precisa ser igual ao `tenant_id` do JWT, caso contrário responde **403 Forbidden** e dispara o hook `on_tenant_mismatch` (override-able por serviço para gravar em `audit_logs`).
+  - Header ausente → JWT manda silenciosamente.
+  - Hooks override-áveis: `jwt_secret`, `jwt_algorithm`, `tenant_header_name`, `on_tenant_mismatch`, `on_jwt_invalid`, `current_jwt_user`.
+  - `skip_jwt_authentication` para opt-out em endpoints públicos (ex: `/auth/sign_in`, `/health`).
+  - Opt-in via `Vert.config.enable_jwt_auth = true` no initializer.
+- `Configuration#enable_jwt_auth`: nova flag (default `false`).
+
+### Migration guide
+
+```ruby
+# config/initializers/vert.rb
+Vert.configure { |c| c.enable_jwt_auth = true }
+
+# app/controllers/api/base_controller.rb
+class Api::BaseController < ApplicationController
+  include Vert::Auth::JwtAuthenticatable
+
+  # opcional: gravar mismatch em audit_logs
+  def on_tenant_mismatch(jwt_tenant_id:, header_tenant_id:, user_id:)
+    super
+    AuditLog.create!(
+      event_type: "security.tenant_mismatch",
+      user_id: user_id,
+      payload: { jwt: jwt_tenant_id, header: header_tenant_id,
+                 ip: request.remote_ip, path: request.fullpath }
+    )
+  end
+end
+```
+
+Corrige fragmentação dos 5 patterns de auth JWT distribuídos pelos 23 serviços do monorepo (alguns aceitavam `X-Tenant-ID` como fallback ou — pior — como fonte primária, sobrescrevendo o JWT).
+
 ## [1.0.7] - 2026-03-21
 
 ### Added

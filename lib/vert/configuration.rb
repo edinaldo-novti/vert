@@ -16,6 +16,7 @@ module Vert
                   :enable_outbox,
                   :enable_health,
                   :enable_authorization,
+                  :enable_jwt_auth,
                   :enable_multi_tenant,
                   :enable_auditable,
                   :enable_soft_deletable,
@@ -43,6 +44,7 @@ module Vert
       @enable_outbox = false
       @enable_health = true
       @enable_authorization = false
+      @enable_jwt_auth = false
       @enable_multi_tenant = false
       @enable_auditable = false
       @enable_soft_deletable = false
