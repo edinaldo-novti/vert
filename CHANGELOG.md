@@ -1,5 +1,44 @@
 # Changelog
 
+## [1.0.15] - 2026-05-24
+
+### Added
+
+- `Vert::Concerns::MultiTenant.multi_tenant_options(include_system_records: true)` — opt-in para que o `default_scope` inclua registros com `tenant_id IS NULL` (system records visíveis globalmente). Útil para `Role`, `Plan`, `Permission` catálogo e outros modelos com registros "globais" compartilhados entre tenants.
+  - Quando ativado, o scope vira `WHERE tenant_id = ? OR tenant_id IS NULL`.
+  - Quando ativado, `tenant_id` deixa de ser obrigatório na validação.
+
+### Fixed
+
+- **Bug crítico latente** — sem a opção `include_system_records`, o `default_scope` do `MultiTenant` escondia silenciosamente todos os registros com `tenant_id NULL` durante requests autenticadas. Isso quebrava qualquer associação `belongs_to` para system records (ex: `User#role` apontando para system role) retornando nil mesmo com `role_id` presente. Consequência: TODAS as Pundit policies que checavam `user.role` retornavam 403 mesmo para Proprietário do tenant.
+  - Workaround anterior (sem essa release): `Role.unscoped.find_by(id:)` em cada chamada.
+  - Com 1.0.15: declarar `multi_tenant_options include_system_records: true` no model e remover workarounds.
+
+### Migration guide
+
+```ruby
+# Antes (workaround):
+class User < ApplicationRecord
+  belongs_to :role, optional: true
+
+  def role
+    return super if association(:role).loaded?
+    @role_with_fallback ||= Role.unscoped.find_by(id: role_id)
+  end
+end
+
+# Depois (vert-core 1.0.15):
+class Role < ApplicationRecord
+  include Vert::Concerns::MultiTenant
+  multi_tenant_options include_system_records: true  # ← novo
+end
+
+class User < ApplicationRecord
+  belongs_to :role, optional: true
+  # Sem override — agora `user.role` carrega normalmente
+end
+```
+
 ## [1.0.14] - 2026-05-24
 
 ### Added
