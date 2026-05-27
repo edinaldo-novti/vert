@@ -32,8 +32,10 @@ module Vert
     #
     # Hooks override-áveis (por serviço):
     #
-    #   - `jwt_secret`           → default `ENV["JWT_SECRET"]`
+    #   - `jwt_secret`           → default `ENV["JWT_SECRET"]` (usado só em HS*)
     #   - `jwt_algorithm`        → default `ENV.fetch("JWT_ALGORITHM", "HS256")`
+    #   - `jwks_url`             → default `ENV["JWKS_URL"]` (obrigatório em RS*/ES*/PS*)
+    #   - `expected_issuer`      → default `ENV["JWT_EXPECTED_ISSUER"]` (verificado em RS*/ES*/PS*)
     #   - `tenant_header_name`   → default `"X-Tenant-ID"`
     #   - `on_tenant_mismatch`   → default só faz `Rails.logger.warn`. Cada
     #                              serviço pode override para gravar em
@@ -42,6 +44,11 @@ module Vert
     #   - `current_jwt_user`     → default `nil`. Serviços que tenham model
     #                              `User` podem retornar o registro para uso
     #                              em controllers.
+    #
+    # Algoritmos assimétricos suportados: RS256/RS384/RS512, ES256/ES384/ES512,
+    # PS256/PS384/PS512. Para usá-los, configure `JWT_ALGORITHM=RS256` (ou similar)
+    # e `JWKS_URL=https://iam.example.com/.well-known/jwks.json`. O serviço busca
+    # a chave pública via JWKS pelo `kid` do header do token.
     module JwtAuthenticatable
       extend ActiveSupport::Concern
 
@@ -111,18 +118,44 @@ module Vert
       def decode_jwt(token)
         require "jwt" unless defined?(JWT)
 
+        if asymmetric_algorithm?
+          decode_jwt_asymmetric(token)
+        else
+          decode_jwt_symmetric(token)
+        end
+      rescue ::JWT::DecodeError, ::JWT::ExpiredSignature, ::JWT::VerificationError,
+             ::JWT::InvalidIssuerError => e
+        on_jwt_invalid(error: e)
+        nil
+      rescue LoadError
+        Rails.logger.error("[Vert::Auth] gem 'jwt' não carregada — adicione `gem \"jwt\"` ao Gemfile do serviço")
+        nil
+      end
+
+      def decode_jwt_symmetric(token)
         ::JWT.decode(
           token,
           jwt_secret,
           true,
           algorithm: jwt_algorithm
         ).first
-      rescue ::JWT::DecodeError, ::JWT::ExpiredSignature, ::JWT::VerificationError => e
-        on_jwt_invalid(error: e)
-        nil
-      rescue LoadError
-        Rails.logger.error("[Vert::Auth] gem 'jwt' não carregada — adicione `gem \"jwt\"` ao Gemfile do serviço")
-        nil
+      end
+
+      def decode_jwt_asymmetric(token)
+        url = jwks_url
+        if url.to_s.strip.empty?
+          on_jwt_invalid(error: RuntimeError.new("JWKS_URL ausente para algoritmo #{jwt_algorithm}"))
+          return nil
+        end
+
+        kid = extract_kid_from_token(token)
+        if kid.to_s.strip.empty?
+          on_jwt_invalid(error: ::JWT::DecodeError.new("header sem 'kid' — RS*/ES*/PS* exigem kid"))
+          return nil
+        end
+
+        registry = Vert::Auth::Jwks::Registry.for(url)
+        decode_with_kid(token, registry, kid)
       end
 
       def jwt_secret
@@ -131,6 +164,60 @@ module Vert
 
       def jwt_algorithm
         ENV.fetch("JWT_ALGORITHM", "HS256")
+      end
+
+      def jwks_url
+        ENV["JWKS_URL"]
+      end
+
+      def expected_issuer
+        ENV["JWT_EXPECTED_ISSUER"]
+      end
+
+      def asymmetric_algorithm?
+        alg = jwt_algorithm.to_s
+        alg.start_with?("RS", "ES", "PS")
+      end
+
+      def extract_kid_from_token(token)
+        # Decode sem verificar assinatura (só queremos o header).
+        _, header = ::JWT.decode(token, nil, false)
+        header && header["kid"]
+      rescue ::JWT::DecodeError
+        nil
+      end
+
+      def decode_with_kid(token, registry, kid, retried: false)
+        public_key = registry.fetch_key(kid: kid)
+        verify_opts = jwt_verify_options
+        ::JWT.decode(token, public_key, true, verify_opts).first
+      rescue Vert::Auth::Jwks::RemoteSet::KeyNotFoundError => e
+        # Pode ser rotação fresh — força refresh do JWKS e tenta 1x mais.
+        if retried
+          on_jwt_invalid(error: e)
+          return nil
+        end
+
+        begin
+          registry.refresh!
+        rescue Vert::Auth::Jwks::RemoteSet::FetchError => fetch_err
+          on_jwt_invalid(error: fetch_err)
+          return nil
+        end
+        decode_with_kid(token, registry, kid, retried: true)
+      rescue Vert::Auth::Jwks::RemoteSet::FetchError => e
+        on_jwt_invalid(error: e)
+        nil
+      end
+
+      def jwt_verify_options
+        opts = { algorithm: jwt_algorithm }
+        iss = expected_issuer
+        if iss && !iss.to_s.strip.empty?
+          opts[:iss] = iss
+          opts[:verify_iss] = true
+        end
+        opts
       end
 
       def tenant_header_name

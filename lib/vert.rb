@@ -37,6 +37,8 @@ require_relative "vert/authorization/policy_finder"
 require_relative "vert/authorization/controller_methods"
 
 # Auth
+require_relative "vert/auth/jwks/remote_set"
+require_relative "vert/auth/jwks/registry"
 require_relative "vert/auth/jwt_authenticatable"
 
 # Railtie

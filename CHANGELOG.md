@@ -1,5 +1,37 @@
 # Changelog
 
+## [1.0.16] - 2026-05-27
+
+### Added
+
+- **`Vert::Auth::Jwks::RemoteSet`** — cliente JWKS (RFC 7517) com cache TTL (default 1h), cooldown em erro (default 30s), retry exponencial em timeout e thread safety. Faz lazy fetch (não pré-aquece no boot) para evitar dependência circular quando o emissor do token é alcançável só após boot.
+- **`Vert::Auth::Jwks::Registry`** — singleton memoized por URL para que múltiplos controllers/threads apontando pro mesmo `JWKS_URL` compartilhem o mesmo cache.
+- **`Vert::Auth::JwtAuthenticatable` agora valida tokens assimétricos (RS256/RS384/RS512, ES256/384/512, PS256/384/512)** via JWKS, escolhendo a chave pelo `kid` do header JWT. Em `KeyNotFoundError` faz `refresh!` + retry 1x (cobre rotação fresh sem janela morta).
+- Novos hooks override-áveis: `jwks_url` (default `ENV["JWKS_URL"]`) e `expected_issuer` (default `ENV["JWT_EXPECTED_ISSUER"]`). Quando issuer setado, decode chama `verify_iss: true`.
+
+### Changed
+
+- **`ruby-jwt` promovida de require lazy para `runtime_dependency` (`>= 2.7, < 4`)** no gemspec. Antes cada serviço tinha que adicionar manualmente; agora vem da gem.
+- `JwtAuthenticatable#decode_jwt` bifurca em `asymmetric_algorithm?`: caminho HS* (legado, símétrico) mantido inalterado; novo caminho RS*/ES*/PS* usa Registry/RemoteSet.
+
+### Security
+
+- Habilita o cutover atômico do IAM Rails de HS256 (segredo compartilhado entre 22 serviços + N store-servers em lojas) para RS256 + JWKS (chave privada só no IAM). Resolve violação de menor privilégio, viabiliza rotação por `kid` e remove ponto único de comprometimento.
+
+### Migration guide
+
+Para um serviço passar a validar tokens RS256 do IAM:
+
+```bash
+# docker-compose
+JWT_ALGORITHM=RS256
+JWKS_URL=http://iam-service:3001/api/iam/.well-known/jwks.json
+JWT_EXPECTED_ISSUER=iam-service
+# Remover JWT_SECRET — não usado em modo assimétrico.
+```
+
+Não há mudança de código — `Vert::Auth::JwtAuthenticatable` detecta `JWT_ALGORITHM=RS*` automaticamente.
+
 ## [1.0.15] - 2026-05-24
 
 ### Added

@@ -34,6 +34,7 @@ Gem::Specification.new do |spec|
   spec.add_runtime_dependency "activerecord", ">= 7.0", "< 9.0"
   spec.add_runtime_dependency "bunny", "~> 2.22"
   spec.add_runtime_dependency "discard", "~> 1.3"
+  spec.add_runtime_dependency "jwt", ">= 2.7", "< 4"
   spec.add_runtime_dependency "sidekiq", ">= 7.0", "< 9.0"
 
   spec.add_development_dependency "rake", "~> 13.0"
